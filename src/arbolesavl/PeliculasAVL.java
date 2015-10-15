@@ -22,6 +22,10 @@ public class PeliculasAVL {
         File ent = new File("PruebaAVLlight.txt");
         String datosPelicula[];
 
+        
+        
+        //lectura archivo
+        
         try {
             lec = new Scanner(ent);
         } catch (FileNotFoundException fnfe) {
@@ -43,11 +47,11 @@ public class PeliculasAVL {
         lec.close();
 
         Pelicula[] pA = new Pelicula[14];
-        //Random rndn = new Random();
+        
         int aux;
 
         for (int i = 0; i < 14; i++) {
-            //aux = rndn.nextInt(peliculas.size());
+            
             pA[i] = (Pelicula) peliculas.get(i);
         }
         while (cuantas > pA.length) {
@@ -60,14 +64,14 @@ public class PeliculasAVL {
         }
         System.out.println("\nPara estas " + cuantas + " peliculas:\n");
         System.out.println(1 + ".- " + pA[0].toString());
-        ArbolAVL a = new ArbolAVL(pA[0]);//((Comparable) peliculas.get(0));
-        for (int i = 1; i < cuantas; i++) {//peliculas.get(i));
+        ArbolAVL a = new ArbolAVL(pA[0]);
+        for (int i = 1; i < cuantas; i++) {
             System.out.println(i + 1 + ".- " + pA[i].toString());
-            a.add(pA[i]);//(Comparable) peliculas.get(i));
+            a.add(pA[i]);
         }
-        //      System.out.print(pA[]);
+       
         a.elimina(pA[1]);
-        a.printByLevel();
+        a.imprmirNivel();
 
     }
 }

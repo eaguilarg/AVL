@@ -1,19 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package arbolesavl;
 
-/**
- *
- * @author polo
- */
 public class nodoAVL<T extends Comparable> {
-
+//raiz tiene nivel 1;
     T elem;
-    nodoAVL<T> left;
-    nodoAVL<T> right, papa;
+    nodoAVL<T> hijoIzquierdo;
+    nodoAVL<T> hijoDerecho, papa;
     int fe;
     int level;
 
@@ -36,12 +28,12 @@ public class nodoAVL<T extends Comparable> {
         this.elem = elem;
     }
 
-    public void setLeft(nodoAVL<T> left) {
-        this.left = left;
+    public void setIzquierda(nodoAVL<T> izq) {
+        this.hijoIzquierdo = izq;
     }
 
-    public void setRight(nodoAVL<T> right) {
-        this.right = right;
+    public void setDerecha(nodoAVL<T> derecha) {
+        this.hijoDerecho = derecha;
     }
 
     public void setPapa(nodoAVL<T> papa) {
@@ -52,12 +44,12 @@ public class nodoAVL<T extends Comparable> {
         this.fe = fc;
     }
 
-    public nodoAVL<T> getLeft() {
-        return left;
+    public nodoAVL<T> getIzquierda() {
+        return hijoIzquierdo;
     }
 
-    public nodoAVL<T> getRight() {
-        return right;
+    public nodoAVL<T> getDerecha() {
+        return hijoDerecho;
     }
 
     public nodoAVL<T> getPapa() {
@@ -81,13 +73,13 @@ public class nodoAVL<T extends Comparable> {
     }
 
     public String toString() {
-        StringBuilder cad = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        cad.append("Elemento: " + elem.toString()+"\n");
-        cad.append("Factor de Equilibrio: "+fe + "\n");
-        cad.append("Nivel: "+level);
+        sb.append("Elemento: " + elem.toString()+"\n");
+        sb.append("Fe: "+fe + "\n");
+        sb.append("Nivel: "+level);
 
-        return cad.toString();
+        return sb.toString();
     }
     
     

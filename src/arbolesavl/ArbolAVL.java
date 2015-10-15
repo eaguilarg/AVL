@@ -10,266 +10,273 @@ public class ArbolAVL<T extends Comparable> {
     public ArbolAVL(T elem) {
         raiz = new nodoAVL(elem);
     }
+    public ArbolAVL(){
+        
+    }
 
-    private nodoAVL<T> buscaAdd(nodoAVL actual, T elem) {
-        if (actual == null) {
+    //funcion que regresa papa del elemento buscado
+    private nodoAVL<T> buscaAdd(nodoAVL papa, T elem) {
+        if (papa == null) {
             return null;
         }
-        if (actual.getElem().compareTo(elem) < 0) {
-            if (actual.getRight() == null) {
-                return actual;
+        if (papa.getElem().compareTo(elem) < 0) {
+            if (papa.getDerecha() == null) {
+                return papa;
             }
-            return buscaAdd(actual.getRight(), elem);
+            return buscaAdd(papa.getDerecha(), elem);
         }
-        if (actual.getElem().compareTo(elem) >= 0) {
-            if (actual.getLeft() == null) {
-                return actual;
+        if (papa.getElem().compareTo(elem) >= 0) {
+            if (papa.getIzquierda() == null) {
+                return papa;
             }
-            return buscaAdd(actual.getLeft(), elem);
+            return buscaAdd(papa.getIzquierda(), elem);
         }
 
-        return actual;
+        return papa;
     }
 
     public void add(T elem) {
-        nodoAVL nuevo, papa, auxP;
+        nodoAVL nuevo, papa, auxiliar;
 
         papa = buscaAdd(raiz, elem);
         nuevo = new nodoAVL(elem);
 
-        if (elem.compareTo(papa.getElem()) <= 0) {
-            papa.setLeft(nuevo);
+        if (elem.compareTo(papa.getElem()) <= 0) {//elem <papa
+            papa.setIzquierda(nuevo);//agregar izq
         } else {
-            papa.setRight(nuevo);
+            papa.setDerecha(nuevo);//agregar der
         }
         nuevo.setPapa(papa);
         nuevo.setLevel(papa.getLevel() + 1);
-        auxP = nuevo;
+        auxiliar = nuevo;
         if (papa == raiz) {
-            papa.setFe(altura(papa.getRight(), 1) - altura(papa.getLeft(), 1));
-        } else {
-            do {
-                auxP = auxP.getPapa();
-                if (auxP.getElem().compareTo(elem) >= 0) {
-                    auxP.setFe(auxP.getFe() - 1);
+            //actualizacion FE
+            papa.setFe(altura(papa.getDerecha(), 1) - altura(papa.getIzquierda(), 1));
+        }
+        else {//papa elem no fue la raiz
+            do {//lo va ha ser hasta llegar a la raiz y Fe sean -1 o 1
+                auxiliar = auxiliar.getPapa();//redefines aux
+                if (auxiliar.getElem().compareTo(elem) >= 0) {//aux(papa elem)>elem
+                    auxiliar.setFe(auxiliar.getFe() - 1);//actualizamos fe(elem fue agregado a la izq)
                 } else {
-                    auxP.setFe(auxP.getFe() + 1);
+                    auxiliar.setFe(auxiliar.getFe() + 1);//actualizamos fe(elem fue agregado a la der)
                 }
-            } while (auxP.getPapa() != null && (auxP.getFe() == 1 || auxP.getFe() == -1));
+            } while (auxiliar.getPapa() != null && (auxiliar.getFe() == 1 || auxiliar.getFe() == -1));
         }
-        if (auxP.getFe() == 0) {
-
+        if (auxiliar.getFe() == 0) {
+            //no se hace nada, agregar no desvalanceo
         } else {
-            rota(auxP);
+            rota(auxiliar);//desvalaneco arbol= fe de 2 o -2
         }
     }
 
-    private void rota(nodoAVL raiz0) {
-        nodoAVL alfa, beta, gamma;
-        alfa = raiz0;
+    private void rota(nodoAVL actual) {
+        nodoAVL nodo1, nodo2, nodo3;
+        nodo1 = actual;
 
-        //System.out.println("alfa:\n"+alfa);
-        //System.out.println(alfa.getFe());
-        if (alfa.getFe() == 2) {
-            beta = alfa.getRight();
-            if (beta.getFe() == 1) {
-                gamma = beta.getRight();
-                rotaDD(alfa, beta, gamma);
-            } else {
-                gamma = beta.getLeft();
-                rotaDI(alfa, beta, gamma);
+        if (nodo1.getFe() == 2) {//arbol cargado a la derecha
+            nodo2 = nodo1.getDerecha();
+            if (nodo2.getFe() == 1) {//sub arbol cargado a la derecha
+                nodo3 = nodo2.getDerecha();
+                rotacionDerDer(nodo1, nodo2, nodo3);//rotacion Derecha-Derecha
+            } else {//sub arbol cargado a la izquierda
+                nodo3 = nodo2.getIzquierda();
+                rotacionDerIzq(nodo1, nodo2, nodo3);//rotacion Derecha-Izquierda
             }
 
-        } else {
+        } else {//arbol cargado a la izquierda
 
-            if (alfa.getFe() == -2) {
-                beta = alfa.getLeft();
-                if (beta.getFe() == -1) {
-                    gamma = beta.getLeft();
-                    rotaII(alfa, beta, gamma);
-                } else {
-                    gamma = beta.getRight();
-                    rotaID(alfa, beta, gamma);
+            if (nodo1.getFe() == -2) {
+                nodo2 = nodo1.getIzquierda();
+                if (nodo2.getFe() == -1) {//sub arbol cargado a la izquierda
+                    nodo3 = nodo2.getIzquierda();
+                    rotacionIzqIzq(nodo1, nodo2, nodo3);//rotacion Izquierda-Izquierda
+                } else {//sub arbol cargado a la derecha
+                    nodo3 = nodo2.getDerecha();
+                    rotacionIzqDer(nodo1, nodo2, nodo3);//rotacion Izquierda-Derecha
                 }
             }
         }
 
-        setLevels(raiz, 1);
+        updateNivel(raiz, 1);//actualizar niveles arbol balanceado
     }
 
-    private void rotaDD(nodoAVL alfa, nodoAVL beta, nodoAVL gamma) {
-        nodoAVL father, b;
+    private void rotacionDerDer(nodoAVL nodo1, nodoAVL nodo2, nodoAVL nodo3) {
+        nodoAVL papa, aux;
 
-        father = alfa.getPapa();
-        b = beta.getLeft();
+        papa = nodo1.getPapa();
+        aux = nodo2.getIzquierda();
 
-        if (b != null) {
-            b.setPapa(alfa);
+        if (aux != null) {// hay hijo izq
+            aux.setPapa(nodo1);
         }
-        alfa.setRight(b);
-        alfa.setPapa(beta);
-        beta.setLeft(alfa);
-        beta.setPapa(father);
-        if (father == null) {
-            beta.setPapa(null);
-            raiz = beta;
-        } else {
-            if (beta.getElem().compareTo(father.getElem()) < 0) {
-                father.setRight(beta);
-            } else {
-                father.setLeft(beta);
-            }
-        }
-
-        beta.setLevel(beta.getLevel() - 1);
-        beta.setFe(beta.getFe() - 1);
-        alfa.setLevel(alfa.getLevel() + 1);
-        alfa.setFe(alfa.getFe() - 2);
-        gamma.setLevel(gamma.getLevel() - 1);
-    }
-
-    private void rotaDI(nodoAVL alfa, nodoAVL beta, nodoAVL gamma) {
-        nodoAVL father, b, c;
-
-        father = alfa.getPapa();
-        b = gamma.getLeft();
-        c = gamma.getRight();
-
-        if (b != null) {
-            b.setPapa(alfa);
-        }
-        alfa.setRight(b);
-        if (c != null) {
-            c.setPapa(beta);
-        }
-        beta.setLeft(c);
-        alfa.setPapa(gamma);
-        beta.setPapa(gamma);
-        gamma.setLeft(alfa);
-        gamma.setRight(beta);
-        gamma.setPapa(father);
+        nodo1.setDerecha(aux);
+        nodo1.setPapa(nodo2);
+        nodo2.setIzquierda(nodo1);
+        nodo2.setPapa(papa);
         
-        if (father == null) {
-            gamma.setPapa(null);
-            raiz = gamma;
-        } else {
-            if (gamma.getElem().compareTo(father.getElem()) < 0) {
-                father.setLeft(gamma);
+        if (papa == null) {//nodo1 no tiene papa
+            nodo2.setPapa(null);
+            raiz = nodo2;
+        } else {//nodo1 si tiene papa
+            if (nodo2.getElem().compareTo(papa.getElem()) < 0) {//nodo2<nodo1.papa
+                papa.setDerecha(nodo2);
             } else {
-                father.setRight(gamma);
+                papa.setIzquierda(nodo2);//nodo2>nodo1.papa
             }
         }
 
-        beta.setFe(beta.getFe() + 1);
-        alfa.setLevel(alfa.getLevel() + 1);
-        alfa.setFe(alfa.getFe() - 2);
-       // if (alfa.getLeft() != null) {
-         //7   alfa.setFe(alfa.getFe() - 1);
-        //}
-        gamma.setLevel(gamma.getLevel() - 2);
-        //gamma.setFe(gamma.getFe() - 1);
+        //actualizar nivel y Fe
+        nodo2.setLevel(nodo2.getLevel() - 1);
+        nodo2.setFe(nodo2.getFe() - 1);
+        
+        nodo1.setLevel(nodo1.getLevel() + 1);
+        nodo1.setFe(nodo1.getFe() - 2);
+        
+        nodo3.setLevel(nodo3.getLevel() - 1);
     }
 
-    private void rotaII(nodoAVL alfa, nodoAVL beta, nodoAVL gamma) {
-        nodoAVL father, b;
-        father = alfa.getPapa();
-        b = beta.getRight();
+    private void rotacionDerIzq(nodoAVL nodo1, nodoAVL nodo2, nodoAVL nodo3) {
+        nodoAVL papa, aux1, aux2;
 
-        if (b != null) {
-            b.setPapa(alfa);
-        }
-        alfa.setLeft(b);
-        alfa.setPapa(beta);
-        gamma.setPapa(beta);
-        beta.setRight(alfa);
-        beta.setLeft(gamma);
-        beta.setPapa(father);
-        if (father == null) {
-            beta.setPapa(null);
-            raiz = beta;
-        } else {
-            if (beta.getElem().compareTo(father.getElem()) < 0) {
-                father.setLeft(beta);
-            } else {
-                father.setRight(beta);
-            }
-        }
-        beta.setLevel(beta.getLevel() - 1);
-        beta.setFe(beta.getFe() + 1);
-        alfa.setLevel(alfa.getLevel() + 1);
-        alfa.setFe(alfa.getFe() + 2);
-        gamma.setLevel(gamma.getLevel() - 1);
-    }
+        papa = nodo1.getPapa();
+        aux1 = nodo3.getIzquierda();
+        aux2 = nodo3.getDerecha();
 
-    private void rotaID(nodoAVL alfa, nodoAVL beta, nodoAVL gamma) {
-        nodoAVL father, b, c;
-
-        father = alfa.getPapa();
-        b = gamma.getLeft();
-        c = gamma.getRight();
-
-        if (b != null) {
-            b.setPapa(beta);
+        if (aux1 != null) {//nodo3 tiene hijo izq
+            aux1.setPapa(nodo1);
         }
-        beta.setRight(b);
-        if (c != null) {
-            c.setPapa(alfa);
+        nodo1.setDerecha(aux1);
+        if (aux2 != null) {// nodo3 tiene hijo der
+            aux2.setPapa(nodo2);
         }
-        alfa.setLeft(c);
-        alfa.setPapa(gamma);
-        beta.setPapa(gamma);
-        gamma.setLeft(beta);
-        gamma.setRight(alfa);
-        gamma.setPapa(father);
-        if (father == null) {
-            gamma.setPapa(null);
-            raiz = gamma;
-        } else {
-            if (gamma.getElem().compareTo(father.getElem()) > 0) {
-                father.setRight(gamma);
-            } else {
-                father.setLeft(gamma);
+        nodo2.setIzquierda(aux2);
+        nodo1.setPapa(nodo3);
+        nodo2.setPapa(nodo3);
+        nodo3.setIzquierda(nodo1);
+        nodo3.setDerecha(nodo2);
+        nodo3.setPapa(papa);
+        
+        if (papa == null) {//nodo1 no tiene papa
+            nodo3.setPapa(null);
+            raiz = nodo3;
+        } else {//nodo1 si tiene papa
+            if (nodo3.getElem().compareTo(papa.getElem()) < 0) {//nodo3<nodo1.papa
+                papa.setIzquierda(nodo3);
+            } else {//nodo3>nodo1.papa
+                papa.setDerecha(nodo3);
             }
         }
 
-        beta.setFe(beta.getFe() - 1);
-        alfa.setLevel(alfa.getLevel() + 1);
-        alfa.setFe(alfa.getFe() + 2);
-        gamma.setLevel(gamma.getLevel() - 2);
+        //actualizar Nivel y Fe
+        nodo2.setFe(nodo2.getFe() + 1);
+        nodo1.setLevel(nodo1.getLevel() + 1);
+        nodo1.setFe(nodo1.getFe() - 2);
+        nodo3.setLevel(nodo3.getLevel() - 2);
+       
     }
 
-    private int altura(nodoAVL<T> actual, int prio) {
+    private void rotacionIzqIzq(nodoAVL nodo1, nodoAVL nodo2, nodoAVL nodo3) {
+        nodoAVL papa, aux;
+        papa = nodo1.getPapa();
+        aux = nodo2.getDerecha();
+
+        if (aux != null) {//nodo2 tiene hijo der
+            aux.setPapa(nodo1);
+        }
+        nodo1.setIzquierda(aux);
+        nodo1.setPapa(nodo2);
+        nodo3.setPapa(nodo2);
+        nodo2.setDerecha(nodo1);
+        nodo2.setIzquierda(nodo3);
+        nodo2.setPapa(papa);
+        
+        if (papa == null) {//nodo1 no tiene papa
+            nodo2.setPapa(null);
+            raiz = nodo2;
+        } else {//nodo1 tiene papa
+            if (nodo2.getElem().compareTo(papa.getElem()) < 0) {//nodo2<nodo1.papa
+                papa.setIzquierda(nodo2);
+            } else {//nodo2>nodo1.papa
+                papa.setDerecha(nodo2);
+            }
+        }
+        //actualizar Nivel y Fe
+        nodo2.setLevel(nodo2.getLevel() - 1);
+        nodo2.setFe(nodo2.getFe() + 1);
+        nodo1.setLevel(nodo1.getLevel() + 1);
+        nodo1.setFe(nodo1.getFe() + 2);
+        nodo3.setLevel(nodo3.getLevel() - 1);
+    }
+
+    private void rotacionIzqDer(nodoAVL nodo1, nodoAVL nodo2, nodoAVL nodo3) {
+        nodoAVL papa, aux1, aux2;
+
+        papa = nodo1.getPapa();
+        aux1 = nodo3.getIzquierda();
+        aux2 = nodo3.getDerecha();
+
+        if (aux1 != null) {//nodo3 tiene hijo izq
+            aux1.setPapa(nodo2);
+        }
+        nodo2.setDerecha(aux1);
+        if (aux2 != null) {//nodo3 tiene hijo der
+            aux2.setPapa(nodo1);
+        }
+        nodo1.setIzquierda(aux2);
+        nodo1.setPapa(nodo3);
+        nodo2.setPapa(nodo3);
+        nodo3.setIzquierda(nodo2);
+        nodo3.setDerecha(nodo1);
+        nodo3.setPapa(papa);
+        
+        if (papa == null) {//nodo1 no tiene papa
+            nodo3.setPapa(null);
+            raiz = nodo3;
+        } else {//nodo1 tiene papa
+            if (nodo3.getElem().compareTo(papa.getElem()) > 0) {//nodo3>nodo1.papa
+                papa.setDerecha(nodo3);
+            } else {//nodo3<nodo1.papa
+                papa.setIzquierda(nodo3);
+            }
+        }
+        //actualizar Nivel y Fe
+        nodo2.setFe(nodo2.getFe() - 1);
+        nodo1.setLevel(nodo1.getLevel() + 1);
+        nodo1.setFe(nodo1.getFe() + 2);
+        nodo3.setLevel(nodo3.getLevel() - 2);
+    }
+
+    private int altura(nodoAVL<T> actual, int nivel) {
         if (actual == null) {
-            return prio - 1;
+            return nivel - 1;
         }
-        int prio1 = altura(actual.getRight(), prio + 1);
-        int prio2 = altura(actual.getLeft(), prio + 1);
-        if (prio1 > prio2) {
-            return prio1;
+        int alturaDer = altura(actual.getDerecha(), nivel + 1);
+        int alturaIzq = altura(actual.getIzquierda(), nivel + 1);
+        if (alturaDer > alturaIzq) {
+            return alturaDer;
         } else {
-            return prio2;
+            return alturaIzq;
         }
     }
 
-    public void printByLevel() {
-        Queue<nodoAVL> q = new LinkedList<nodoAVL>();
+    public void imprmirNivel() {
+        Queue<nodoAVL> cola = new LinkedList<nodoAVL>();
         nodoAVL<T> nodo;
 
-        q.add(raiz);
-        while (!q.isEmpty()) {
-            nodo = q.remove();
+        cola.add(raiz);
+        while (!cola.isEmpty()) {
+            nodo = cola.remove();
             System.out.println("\n" + nodo.toString());
-            if (nodo.getLeft() != null) {
-                // System.out.println(nodo.getLeft().toString());
-                q.add(nodo.getLeft());
+            if (nodo.getIzquierda() != null) {
+                cola.add(nodo.getIzquierda());
             }
-            if (nodo.getRight() != null) {
-                //System.out.println(nodo.getRight().toString());
-                q.add(nodo.getRight());
+            if (nodo.getDerecha() != null) {
+                cola.add(nodo.getDerecha());
             }
         }
     }
-
+//funcion que busca elemento en arbol, regresa el nodo si lo encuentra
     public nodoAVL<T> busca(T elem) {
         Queue<nodoAVL> q = new LinkedList<nodoAVL>();
         nodoAVL<T> nodo;
@@ -280,13 +287,11 @@ public class ArbolAVL<T extends Comparable> {
             if (nodo.getElem().equals(elem)) {
                 return nodo;
             }
-            if (nodo.getLeft() != null) {
-                // System.out.println(nodo.getLeft().toString());
-                q.add(nodo.getLeft());
+            if (nodo.getIzquierda() != null) {
+                q.add(nodo.getIzquierda());
             }
-            if (nodo.getRight() != null) {
-                //System.out.println(nodo.getRight().toString());
-                q.add(nodo.getRight());
+            if (nodo.getDerecha() != null) {
+                q.add(nodo.getDerecha());
             }
         }
 
@@ -294,62 +299,54 @@ public class ArbolAVL<T extends Comparable> {
     }
 
     public nodoAVL<T> elimina(T elem) {
-        nodoAVL<T> nodo = busca(elem), papa, abuelo, susIO;
+        nodoAVL<T> nodo = busca(elem), papa, abuelo, aux;
 
         if (nodo == null) {
-
+            //si no esta el elem no hace nada
         } else {
             papa = nodo.getPapa();
             abuelo = papa.getPapa();
 
-            if ((nodo.getLeft() == null) && nodo.getRight() == null) {//Si el nodo es una hoja
+            if ((nodo.getIzquierda() == null) && nodo.getDerecha() == null) {//nodo es hoja
                 if (nodo.getElem().compareTo(papa.getElem()) <= 0) {
-                    papa.setLeft(null);
+                    papa.setIzquierda(null);
                 } else {
-                    papa.setRight(null);
+                    papa.setDerecha(null);
                 }
             }
 
-            if (nodo.getLeft() == null) { //Si tiene solo hijo derecho
-                nodo.setElem(nodo.getRight().getElem());
-                nodo.getRight().setPapa(null);
-                nodo.setRight(null);
+            if (nodo.getIzquierda() == null) { //nodo tiene hijo derecho
+                nodo.setElem(nodo.getDerecha().getElem());
+                nodo.getDerecha().setPapa(null);
+                nodo.setDerecha(null);
                 nodo.setFe(nodo.getFe() - 1);
-            } else if (nodo.getRight() == null) { //si tiene solo hijo izquierdo
-                nodo.setElem(nodo.getLeft().getElem());
-                nodo.getLeft().setPapa(null);
-                nodo.setLeft(null);
+            } else if (nodo.getDerecha() == null) { //nodo tiene hijo izquierdo
+                nodo.setElem(nodo.getIzquierda().getElem());
+                nodo.getIzquierda().setPapa(null);
+                nodo.setIzquierda(null);
                 nodo.setFe(nodo.getFe() + 1);
-            } else {// Si tiene dos hijos
-                susIO = nodo.getLeft();
-                papa = susIO.getPapa();
-                papa.setRight(null);
-                susIO.setPapa(null);
-                nodo.setElem(susIO.getElem());
+            } else {// nodo tiene ambos hijos
+                aux = nodo.getIzquierda();
+                papa = aux.getPapa();
+                papa.setDerecha(null);
+                aux.setPapa(null);
+                nodo.setElem(aux.getElem());
             }
-
+            //actualizar Fe desde papa elem hasta raiz
             while (papa != null) {
-                papa.setFe(altura(papa.getRight(), papa.getLevel()) - altura(papa.getLeft(), papa.getLevel()));
+                papa.setFe(altura(papa.getDerecha(), papa.getLevel()) - altura(papa.getIzquierda(), papa.getLevel()));
                 papa = papa.getPapa();
             }
         }
         return nodo;
     }
-
-    public nodoAVL<T> getMax(nodoAVL<T> raiz) {
-        nodoAVL<T> aux = raiz.getLeft();
-        while (aux.getRight() != null) {
-            aux = aux.getRight();
-        }
-        return aux;
-    }
-
-    private void setLevels(nodoAVL<T> actual, int level) {//actual inicia en raiz, level inicia en 1
+                                         //raiz      //1      
+     private void updateNivel(nodoAVL<T> actual, int level) {
         if (actual == null) {
             return;
         }
         actual.setLevel(level);
-        setLevels(actual.getLeft(), level + 1);
-        setLevels(actual.getRight(), level + 1);
+        updateNivel(actual.getIzquierda(), level + 1);
+        updateNivel(actual.getDerecha(), level + 1);
     }
 }

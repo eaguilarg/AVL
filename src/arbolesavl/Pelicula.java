@@ -48,16 +48,16 @@ public class Pelicula implements Comparable<Pelicula> {
             return -1;
         }
         return 0;
-        //To change body of generated methods, choose Tools | Templates.
+       
     }
 
     public String toString() {
-        StringBuilder cad = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        cad.append("Título: " + nombre);
-        cad.append("  id: " + id);
-        cad.append("   Año: " + año);
+        sb.append("Título: " + nombre);
+        sb.append("  id: " + id);
+        sb.append("   Año: " + año);
 
-        return cad.toString();
+        return sb.toString();
     }
 }
