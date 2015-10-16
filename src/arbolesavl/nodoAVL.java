@@ -74,11 +74,11 @@ public class nodoAVL<T extends Comparable> {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
-        sb.append("Elemento: " + elem.toString()+"\n");
+        
+        sb.append("\n"+"Elemento: " + elem.toString()+"\n");
         sb.append("Fe: "+fe + "\n");
         sb.append("Nivel: "+level);
-
+        
         return sb.toString();
     }
     
